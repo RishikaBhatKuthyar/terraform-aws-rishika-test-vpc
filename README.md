@@ -11,92 +11,28 @@ This Terraform module allows users to create an AWS Virtual Private Cloud (VPC) 
 - **Automatic IGW Creation**: If public subnets are created, the module will automatically create an Internet Gateway.
 - **Routing Table Association**: Public subnets are automatically associated with a routing table that routes traffic through the Internet Gateway.
 
-## Workflow Diagram
+## Usage
 
-```plaintext
-+---------------------------+
-|        Start               |
-+---------------------------+
-            |
-            v
-+---------------------------+
-| Input VPC CIDR Block       |
-| (User provides CIDR block) |
-+---------------------------+
-            |
-            v
-+---------------------------+
-|       Create VPC           |
-| (Using the CIDR block)     |
-+---------------------------+
-            |
-            v
-+-----------------------------------+
-|  For Each Subnet Configuration    |
-|  (Loop over user-provided subnets)|
-+-----------------------------------+
-            |
-            v
-+-----------------------------------+
-| Input Subnet CIDR Block,          |
-| Availability Zone, and            |
-| Public/Private Flag               |
-+-----------------------------------+
-            |
-            v
-+---------------------------+
-|       Create Subnet        |
-| (With provided CIDR block, |
-| Availability Zone, and Flag)|
-+---------------------------+
-            |
-            v
-+---------------------------+
-| Is Subnet Public?         |
-| (Decision Point)          |
-+---------------------------+
-       |         |
-       |         v
-       |     +---------------------------+
-       |     | No: Add to Private Subnets |
-       |     +---------------------------+
-       |
-       v
-+-----------------------------------+
-| Yes: Add to Public Subnets List   |
-+-----------------------------------+
-            |
-            v
-+---------------------------+
-| Check if Any Public Subnets|
-| Exist (Decision Point)     |
-+---------------------------+
-       |         |
-       |         v
-       |     +---------------------------+
-       |     | No: Skip IGW and           |
-       |     | Route Table Creation       |
-       |     +---------------------------+
-       |
-       v
-+-------------------------------+
-| Yes: Create Internet Gateway  |
-| (IGW for VPC)                 |
-+-------------------------------+
-            |
-            v
-+-------------------------------+
-| Create Route Table            |
-| (For public subnets)          |
-+-------------------------------+
-            |
-            v
-+-------------------------------+
-| Associate Route Table with    |
-| Public Subnets                |
-+-------------------------------+
-            |
-            v
-+---------------------------+
-|          End              |
-+---------------------------+
+```hcl
+module "vpc" {
+  source = "./module/vpc"
+
+  vpc_config = {
+    cidr_block = "10.0.0.0/16"
+    name       = "your_vpc_name"
+  }
+
+  subnet_config = {
+    public_subnet = {
+      cidr_block = "10.0.0.0/24"
+      az         = "eu-north-1a"
+      # To set the subnet as public, default is private
+      public     = true
+    }
+
+    private_subnet = {
+      cidr_block = "10.0.1.0/24"
+      az         = "eu-north-1b"
+    }
+  }
+}

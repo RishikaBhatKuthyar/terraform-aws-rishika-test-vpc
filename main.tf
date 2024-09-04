@@ -48,3 +48,93 @@ resource "aws_route_table_association" "main" {
     route_table_id = aws_route_table.name[0].id
   
 }
+
+
+
+# 
+# +---------------------------+
+# |        Start               |
+# +---------------------------+
+#             |
+#             v
+# +---------------------------+
+# | Input VPC CIDR Block       |
+# | (User provides CIDR block) |
+# +---------------------------+
+#             |
+#             v
+# +---------------------------+
+# |       Create VPC           |
+# | (Using the CIDR block)     |
+# +---------------------------+
+#             |
+#             v
+# +-----------------------------------+
+# |  For Each Subnet Configuration    |
+# |  (Loop over user-provided subnets)|
+# +-----------------------------------+
+#             |
+#             v
+# +-----------------------------------+
+# | Input Subnet CIDR Block,          |
+# | Availability Zone, and            |
+# | Public/Private Flag               |
+# +-----------------------------------+
+#             |
+#             v
+# +---------------------------+
+# |       Create Subnet        |
+# | (With provided CIDR block, |
+# | Availability Zone, and Flag)|
+# +---------------------------+
+#             |
+#             v
+# +---------------------------+
+# | Is Subnet Public?         |
+# | (Decision Point)          |
+# +---------------------------+
+#        |         |
+#        |         v
+#        |     +---------------------------+
+#        |     | No: Add to Private Subnets |
+#        |     +---------------------------+
+#        |
+#        v
+# +-----------------------------------+
+# | Yes: Add to Public Subnets List   |
+# +-----------------------------------+
+#             |
+#             v
+# +---------------------------+
+# | Check if Any Public Subnets|
+# | Exist (Decision Point)     |
+# +---------------------------+
+#        |         |
+#        |         v
+#        |     +---------------------------+
+#        |     | No: Skip IGW and           |
+#        |     | Route Table Creation       |
+#        |     +---------------------------+
+#        |
+#        v
+# +-------------------------------+
+# | Yes: Create Internet Gateway  |
+# | (IGW for VPC)                 |
+# +-------------------------------+
+#             |
+#             v
+# +-------------------------------+
+# | Create Route Table            |
+# | (For public subnets)          |
+# +-------------------------------+
+#             |
+#             v
+# +-------------------------------+
+# | Associate Route Table with    |
+# | Public Subnets                |
+# +-------------------------------+
+#             |
+#             v
+# +---------------------------+
+# |          End              |
+# +---------------------------+
